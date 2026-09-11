@@ -1,0 +1,51 @@
+
+name: Banking POC CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-and-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout the source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Set up Java 21
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # 3. Verify Java version
+      - name: Check Java version
+        run: java -version
+
+      # 4. Build and run tests
+      - name: Build and test
+        run: ./mvnw clean verify
+
+      # 5. Package the application
+      - name: Package application
+        run: ./mvnw clean package -DskipTests
+
+      # 6. Upload the generated JAR
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: banking-poc-jar
+          path: target/*.jar
