@@ -769,6 +769,6 @@ These are **future enhancements and are not part of the current implementation**
 
 ## 👩‍💻 Author
 
-**Banking POC**
+**Laxmi Thapa**
 
-Built as a Spring Boot backend Proof of Concept.
+
