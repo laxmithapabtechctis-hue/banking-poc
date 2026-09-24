@@ -7,18 +7,22 @@ import com.example.banking_poc.exception.CustomerNotFoundException;
 import com.example.banking_poc.exception.DuplicateCustomerException;
 import com.example.banking_poc.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final RestClient restClient;
 
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
+        this.restClient = RestClient.create();
     }
 
     // Create customer with duplicate checks
@@ -60,6 +64,19 @@ public class CustomerService {
         customer.setUpdatedAt(now);
 
         Customer savedCustomer = customerRepository.save(customer);
+
+        // Prepare request for Notification Service
+        Map<String, String> notificationRequest = Map.of(
+                "customerNumber", savedCustomer.getCustomerNumber(),
+                "email", savedCustomer.getEmail()
+        );
+
+        // Call Notification Service through Dapr
+        restClient.post()
+                .uri("http://localhost:3502/v1.0/invoke/notification-service/method/api/notifications/welcome")
+                .body(notificationRequest)
+                .retrieve()
+                .toBodilessEntity();
 
         return convertToResponse(savedCustomer);
     }
